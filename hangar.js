@@ -3,7 +3,7 @@ const zlib = require('zlib')
 const fs = require('fs')
 const params = {
   src: '/home/qdltc/experimental_fgd', ext: 'geojson',
-  dst: '/export/experimental_fgd.mbtiles'
+  dst: './experimental_fgd.mbtiles'
 }
 
 function* files() {
