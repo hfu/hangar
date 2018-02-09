@@ -1,0 +1,23 @@
+{
+  "name": "hangar",
+  "version": "1.0.0",
+  "description": "hanger tiles into mbtiles",
+  "main": "hangar.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hfu/hangar.git"
+  },
+  "author": "",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/hfu/hangar/issues"
+  },
+  "homepage": "https://github.com/hfu/hangar#readme",
+  "dependencies": {
+    "@mapbox/mbtiles": "^0.9.0",
+    "zlib": "^1.0.5"
+  }
+}
