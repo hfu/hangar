@@ -6,41 +6,48 @@ const params = {
   dst: './experimental_fgd.mbtiles'
 }
 
-new MBTiles(params.dst, (err, mbtiles) => {
-  if (err) throw err
-  //mbtiles.startWriting(err => {
-    //if (err) throw err
-    for(let z = 0; z <= 24; z++) {
-      fs.readdir(`${params.src}/${z}`, (err, items) => {
-        if (err) return
-        items.slice(0, 1).forEach(xs => {
-          const x = Number(xs)
-          fs.readdir(`${params.src}/${z}/${x}`, (err, items) => {
-            if (err) return
-            items.slice(0, 2).forEach(fn => {
-              if (fn.endsWith(params.ext)) {
-                const y = Number(fn.replace(`.${params.ext}`, ''))
-                const path = `${params.src}/${z}/${x}/${fn}`
-                const buf = fs.readFileSync(path, {encoding: 'utf-8'})
-                const gz = zlib.gzipSync(buf)
-                console.log(`${z}/${x}/${y} ${buf.length} => ${gz.length} (${Math.round(100.0 * gz.length / buf.length)}%)`)
-                mbtiles.startWriting(err => {
-                  console.log('started')
-                  if (err) throw err
-                  mbtiles.putTile(z, x, y, gz, err => {
-                    console.log('put')
-                    if (err) console.log(err)
-                    mbtiles.stopWriting(err => {
-                      if (err) throw err
-                      console.log('stopped')
-                    })
-                  })
-                })
-              }
-            })
+function* files() {
+  for(let z = 0; z <= 24; z++) {
+    if(!fs.existsSync(`${params.src}/${z}`)) continue
+    for(const xs of fs.readdirSync(`${params.src}/${z}`)) {
+      const x = Number(xs)
+      for(const fn of fs.readdirSync(`${params.src}/${z}/${x}`)) {
+        if (fn.endsWith(params.ext)) {
+          const y = Number(fn.replace(`.${params.ext}`, ''))
+          const path = `${params.src}/${z}/${x}/${fn}`
+          const buf = fs.readFileSync(path, {encoding: 'utf-8'})
+          const gz = zlib.gzipSync(buf)
+          yield {z: z, x: x, y: y, path: path, buf: buf, gz: gz}
+//          console.log(`${z}/${x}/${y} ${buf.length} => ${gz.length} (${Math.round(100.0 * gz.length / buf.length)}%)`)
+        }
+      }
+    }
+  }
+}
+
+let w = async (r) => {
+  return new Promise((resolve, reject) => {
+    new MBTiles(params.dst, (err, mbtiles) => {
+      if (err) throw err
+      mbtiles.startWriting(err => {
+        if (err) throw err
+        mbtiles.putTile(r.z, r.x, r.y, r.gz, err => {
+          if (err) throw err
+          mbtiles.stopWriting(err => {
+            if (err) throw err
+            console.log(r.path)
+            resolve()
           })
         })
       })
-    }
-  //})
-})
+    })
+  })
+}
+
+const main = async () => {
+  for(const r of files()) {
+    await w(r)
+  }
+}
+
+main()
