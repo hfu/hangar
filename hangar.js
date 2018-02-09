@@ -3,7 +3,7 @@ const zlib = require('zlib')
 const fs = require('fs')
 const params = {
   src: '/home/qdltc/experimental_fgd', ext: 'geojson',
-  dst: './experimental_fgd.mbtiles'
+  dst: '/export/experimental_fgd.mbtiles'
 }
 
 function* files() {
@@ -18,7 +18,7 @@ function* files() {
           const buf = fs.readFileSync(path, {encoding: 'utf-8'})
           const gz = zlib.gzipSync(buf)
           yield {z: z, x: x, y: y, path: path, buf: buf, gz: gz}
-//          console.log(`${z}/${x}/${y} ${buf.length} => ${gz.length} (${Math.round(100.0 * gz.length / buf.length)}%)`)
+          console.log(`${z}/${x}/${y} ${buf.length} => ${gz.length} (${Math.round(100.0 * gz.length / buf.length)}%)`)
         }
       }
     }
@@ -35,7 +35,6 @@ let w = async (r) => {
           if (err) throw err
           mbtiles.stopWriting(err => {
             if (err) throw err
-            console.log(r.path)
             resolve()
           })
         })
