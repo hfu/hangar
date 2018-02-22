@@ -2,8 +2,10 @@ const MBTiles = require('@mapbox/mbtiles')
 const zlib = require('zlib')
 const fs = require('fs')
 const params = {
-  src: '/home/qdltc/experimental_fgd', ext: 'geojson',
-  dst: './experimental_fgd.mbtiles'
+//  src: '/home/qdltc/experimental_fgd', ext: 'geojson',
+//  dst: '/export/experimental_fgd.mbtiles'
+  src: '/export/unmap_global', ext: 'mvt',
+  dst: '/export/unmap_global.mbtiles'
 }
 
 function* files() {
@@ -15,7 +17,8 @@ function* files() {
         if (fn.endsWith(params.ext)) {
           const y = Number(fn.replace(`.${params.ext}`, ''))
           const path = `${params.src}/${z}/${x}/${fn}`
-          const buf = fs.readFileSync(path, {encoding: 'utf-8'})
+          const buf = fs.readFileSync(path, params.ext === 'geojson' ? 
+            {encoding: 'utf-8'} : null)
           const gz = zlib.gzipSync(buf)
           yield {z: z, x: x, y: y, path: path, buf: buf, gz: gz}
           console.log(`${z}/${x}/${y} ${buf.length} => ${gz.length} (${Math.round(100.0 * gz.length / buf.length)}%)`)
